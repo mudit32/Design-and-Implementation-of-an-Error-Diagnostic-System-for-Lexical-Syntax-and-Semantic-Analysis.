@@ -12,8 +12,8 @@ int autocorrect_count = 0;
 
 #define ECHO_YY if(temp_out) { fprintf(temp_out, "%s", yytext); }
 
-char *keywords[] = {"int","float","char","string","if","else","while","for"};
-int kw_count = 8;
+char *keywords[] = {"int","float","char","string","if","else","while","for","printf","scanf"};
+int kw_count = 10;
 
 /* Calculates true Levenshtein distance to handle insertions, deletions, and swaps reliably */
 int levenshtein(const char *s1, const char *s2) {
@@ -45,6 +45,7 @@ int levenshtein(const char *s1, const char *s2) {
 }
 
 char* autocorrect(char *word){
+    if (strlen(word) <= 1) return NULL;
     int min = 100, index = -1;
     for(int i=0;i<kw_count;i++){
         int d = levenshtein(word, keywords[i]);
@@ -83,6 +84,8 @@ int keyword_token(const char *kw){
     if(strcmp(kw,"else")==0)   return ELSE;
     if(strcmp(kw,"while")==0)  return WHILE;
     if(strcmp(kw,"for")==0)    return FOR;
+    if(strcmp(kw,"printf")==0) return PRINTF;
+    if(strcmp(kw,"scanf")==0)  return SCANF;
     return -1;
 }
 %}
@@ -100,6 +103,8 @@ int keyword_token(const char *kw){
 "else"     { ECHO_YY; return ELSE; }
 "while"    { ECHO_YY; return WHILE; }
 "for"      { ECHO_YY; return FOR; }
+"printf"   { ECHO_YY; return PRINTF; }
+"scanf"    { ECHO_YY; return SCANF; }
 
 [0-9]*\.[0-9]*\.[0-9]*    { ECHO_YY; addLexError(line, "Malformed number"); }
 
@@ -114,7 +119,7 @@ int keyword_token(const char *kw){
 
 [0-9][a-zA-Z_]+           { ECHO_YY; addLexError(line, "Invalid identifier"); }
 
-[a-zA-Z_][a-zA-Z0-9_]*[^a-zA-Z0-9 \t\n\+\-\*/=;(){}<>!\"']+ {
+[a-zA-Z_][a-zA-Z0-9_]*[^a-zA-Z0-9 \t\n\+\-\*/=;(){}\[\]<>,&!\"']+ {
     ECHO_YY;
     char msg[128];
     snprintf(msg, sizeof(msg), "Invalid identifier '%s'", yytext);
@@ -152,11 +157,15 @@ int keyword_token(const char *kw){
 ")" { ECHO_YY; return RPAREN; }
 "{" { ECHO_YY; return LBRACE; }
 "}" { ECHO_YY; return RBRACE; }
+"[" { ECHO_YY; return LBRACKET; }
+"]" { ECHO_YY; return RBRACKET; }
+"," { ECHO_YY; return COMMA; }
+"&" { ECHO_YY; return AMPERSAND; }
 
 [ \t\r]+ { ECHO_YY; }
 \n { ECHO_YY; line++; }
 
-[^a-zA-Z0-9 \t\n\+\-\*/=;(){}<>!\"'] {
+[^a-zA-Z0-9 \t\n\+\-\*/=;(){}\[\]<>,&!\"'] {
     ECHO_YY;
     addLexError(line, "Invalid character");
 }

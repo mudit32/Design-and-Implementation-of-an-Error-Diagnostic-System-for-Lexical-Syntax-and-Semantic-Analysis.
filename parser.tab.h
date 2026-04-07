@@ -66,18 +66,24 @@ extern int yydebug;
     ELSE = 267,                    /* ELSE  */
     WHILE = 268,                   /* WHILE  */
     FOR = 269,                     /* FOR  */
-    PLUS = 270,                    /* PLUS  */
-    MINUS = 271,                   /* MINUS  */
-    MUL = 272,                     /* MUL  */
-    DIV = 273,                     /* DIV  */
-    ASSIGN = 274,                  /* ASSIGN  */
-    RELOP = 275,                   /* RELOP  */
-    SEMI = 276,                    /* SEMI  */
-    LPAREN = 277,                  /* LPAREN  */
-    RPAREN = 278,                  /* RPAREN  */
-    LBRACE = 279,                  /* LBRACE  */
-    RBRACE = 280,                  /* RBRACE  */
-    LOWER_THAN_ELSE = 281          /* LOWER_THAN_ELSE  */
+    PRINTF = 270,                  /* PRINTF  */
+    SCANF = 271,                   /* SCANF  */
+    PLUS = 272,                    /* PLUS  */
+    MINUS = 273,                   /* MINUS  */
+    MUL = 274,                     /* MUL  */
+    DIV = 275,                     /* DIV  */
+    ASSIGN = 276,                  /* ASSIGN  */
+    RELOP = 277,                   /* RELOP  */
+    SEMI = 278,                    /* SEMI  */
+    LPAREN = 279,                  /* LPAREN  */
+    RPAREN = 280,                  /* RPAREN  */
+    LBRACE = 281,                  /* LBRACE  */
+    RBRACE = 282,                  /* RBRACE  */
+    LBRACKET = 283,                /* LBRACKET  */
+    RBRACKET = 284,                /* RBRACKET  */
+    COMMA = 285,                   /* COMMA  */
+    AMPERSAND = 286,               /* AMPERSAND  */
+    LOWER_THAN_ELSE = 287          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -86,10 +92,10 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 129 "parser.y"
+#line 130 "parser.y"
  char* str; 
 
-#line 93 "parser.tab.h"
+#line 99 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

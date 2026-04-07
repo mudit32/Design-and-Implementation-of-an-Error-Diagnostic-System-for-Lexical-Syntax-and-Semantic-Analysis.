@@ -97,9 +97,10 @@ char* checkType(char* t1,char* t2){
 /*  PRINT  */
 void printSymbolTable(){
     printf("\n SYMBOL TABLE \n");
-    printf("Name\tType\tInitialized\n");
+    printf("%-20s %-15s %-15s\n", "Name", "Type", "Initialized");
+    printf("----------------------------------------------------\n");
     for(int i=0;i<symcount;i++){
-        printf("%s\t%s\t%d\n",
+        printf("%-20s %-15s %-15d\n",
             symtab[i].name,
             symtab[i].type,
             symtab[i].initialized);
@@ -131,11 +132,12 @@ void printErrors(){
 /*  TOKENS  */
 %token <str> IDENTIFIER NUMBER STRING_LITERAL CHAR_LITERAL
 %token INT FLOAT CHAR STRING
-%token IF ELSE WHILE FOR
+%token IF ELSE WHILE FOR PRINTF SCANF
 %token PLUS MINUS MUL DIV ASSIGN RELOP
 %token SEMI LPAREN RPAREN LBRACE RBRACE
+%token LBRACKET RBRACKET COMMA AMPERSAND
 
-%type <str> expr type
+%type <str> expr type opt_expr
 
 /*  PRECEDENCE (FIXES CONFLICTS)  */
 %nonassoc LOWER_THAN_ELSE
@@ -157,6 +159,9 @@ stmt:
     | assign
     | if_stmt
     | while_stmt
+    | for_stmt
+    | print_stmt
+    | scan_stmt
     | block
     | error SEMI { addSynError(line,"Invalid statement"); yyerrok; }
 ;
@@ -168,6 +173,10 @@ block:
 decl:
     type IDENTIFIER SEMI {
         insert($2,$1);
+    }
+
+    | type IDENTIFIER LBRACKET NUMBER RBRACKET SEMI {
+        insert($2,$1); 
     }
 
     | type IDENTIFIER ASSIGN expr SEMI {
@@ -208,6 +217,19 @@ assign:
         }
     }
 
+    | IDENTIFIER LBRACKET expr RBRACKET ASSIGN expr SEMI {
+        int i=lookup($1);
+        if(i==-1 && !syntaxErrorFlag){
+            addSemError(line,"Undeclared array");
+        } 
+        else if(i!=-1 && !syntaxErrorFlag){
+            if($6 && strcmp(symtab[i].type,$6)!=0)
+                addSemError(line,"Type mismatch in array assignment");
+            else
+                symtab[i].initialized=1;
+        }
+    }
+
     | IDENTIFIER ASSIGN error SEMI {
         addSynError(line,"Missing expression after '='");
         yyerrok;
@@ -227,6 +249,64 @@ while_stmt:
     WHILE LPAREN expr RPAREN stmt
 ;
 
+for_stmt:
+    FOR LPAREN opt_assign SEMI opt_expr SEMI opt_assign RPAREN stmt
+;
+
+opt_assign:
+      /* empty */
+    | assign_expr
+;
+
+assign_expr:
+    IDENTIFIER ASSIGN expr {
+        int i=lookup($1);
+        if(i==-1 && !syntaxErrorFlag){
+            addSemError(line,"Undeclared variable");
+        } else if(i!=-1 && !syntaxErrorFlag) {
+            if($3 && strcmp(symtab[i].type,$3)!=0)
+                addSemError(line,"Type mismatch in assignment");
+            else
+                symtab[i].initialized=1;
+        }
+    }
+    | IDENTIFIER LBRACKET expr RBRACKET ASSIGN expr {
+        int i=lookup($1);
+        if(i==-1 && !syntaxErrorFlag){
+            addSemError(line,"Undeclared array");
+        } else if(i!=-1 && !syntaxErrorFlag) {
+            if($6 && strcmp(symtab[i].type,$6)!=0)
+                addSemError(line,"Type mismatch in array assignment");
+            else
+                symtab[i].initialized=1;
+        }
+    }
+;
+
+opt_expr:
+      /* empty */ { $$ = NULL; }
+    | expr { $$ = $1; }
+;
+
+print_stmt:
+      PRINTF LPAREN STRING_LITERAL RPAREN SEMI
+    | PRINTF LPAREN STRING_LITERAL COMMA expr_list RPAREN SEMI
+;
+
+scan_stmt:
+    SCANF LPAREN STRING_LITERAL COMMA AMPERSAND IDENTIFIER RPAREN SEMI {
+        int i=lookup($6);
+        if(i==-1 && !syntaxErrorFlag){
+            addSemError(line,"Undeclared variable in scanf");
+        }
+    }
+;
+
+expr_list:
+      expr
+    | expr_list COMMA expr
+;
+
 expr:
       expr PLUS expr { $$=checkType($1,$3); }
     | expr MINUS expr { $$=checkType($1,$3); }
@@ -243,6 +323,17 @@ expr:
             $$ = NULL;
         } else {
             $$ = (i==-1) ? NULL : symtab[i].type;
+        }
+    }
+
+    | IDENTIFIER LBRACKET expr RBRACKET {
+        int i = lookup($1);
+
+        if(i == -1 && !syntaxErrorFlag){
+            addSemError(line,"Undeclared array");
+            $$ = NULL;
+        } else {
+            $$ = (i==-1) ? NULL : symtab[i].type; // Treating array element seamlessly
         }
     }
 
