@@ -347,7 +347,6 @@ expr:
 %%
 
 extern FILE *yyin;
-extern FILE *temp_out;
 extern int autocorrect_count;
 
 int main(int argc, char **argv){
@@ -359,11 +358,6 @@ int main(int argc, char **argv){
             perror("Error opening input file");
             return 1;
         }
-        temp_out = fopen("temp_autocorrect.c", "w");
-        if (!temp_out) {
-            perror("Error opening temporary file");
-            return 1;
-        }
     }
 
     if (argc == 1) {
@@ -371,29 +365,13 @@ int main(int argc, char **argv){
     }
 
     yyparse();
-
-    if (temp_out) {
-        fclose(temp_out);
-        temp_out = NULL;
-    }
     if (yyin && yyin != stdin) {
         fclose(yyin);
         yyin = NULL;
     }
 
     if (input_file && autocorrect_count > 0) {
-        if (remove(input_file) != 0) {
-            perror("Error removing original file");
-        }
-        if (rename("temp_autocorrect.c", input_file) != 0) {
-            perror("Error saving autocorrected file");
-            // If rename fails (e.g., across drives or permissions issue), we still keep the temp file
-            printf("The auto-corrected output is saved in 'temp_autocorrect.c'\n");
-        } else {
-            printf("\nSuccessfully auto-corrected %d typo(s) in %s\n", autocorrect_count, input_file);
-        }
-    } else if (input_file) {
-        remove("temp_autocorrect.c");
+        printf("\nSuccessfully auto-corrected %d typo(s) in %s\n", autocorrect_count, input_file);
     }
 
     printf("\nTotal Errors: %d\n",errorCount);

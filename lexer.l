@@ -7,10 +7,8 @@
 extern void addLexError(int, const char*);
 int line = 1;
 
-FILE *temp_out = NULL;
 int autocorrect_count = 0;
 
-#define ECHO_YY if(temp_out) { fprintf(temp_out, "%s", yytext); }
 
 char *keywords[] = {"int","float","char","string","if","else","while","for","printf","scanf"};
 int kw_count = 10;
@@ -92,35 +90,35 @@ int keyword_token(const char *kw){
 
 %%
 
-"//".* { ECHO_YY; }
+"//".* {  }
 
-"int"      { ECHO_YY; return INT; }
-"float"    { ECHO_YY; return FLOAT; }
-"char"     { ECHO_YY; return CHAR; }
-"string"   { ECHO_YY; return STRING; }
+"int"      {  return INT; }
+"float"    {  return FLOAT; }
+"char"     {  return CHAR; }
+"string"   {  return STRING; }
 
-"if"       { ECHO_YY; return IF; }
-"else"     { ECHO_YY; return ELSE; }
-"while"    { ECHO_YY; return WHILE; }
-"for"      { ECHO_YY; return FOR; }
-"printf"   { ECHO_YY; return PRINTF; }
-"scanf"    { ECHO_YY; return SCANF; }
+"if"       {  return IF; }
+"else"     {  return ELSE; }
+"while"    {  return WHILE; }
+"for"      {  return FOR; }
+"printf"   {  return PRINTF; }
+"scanf"    {  return SCANF; }
 
-[0-9]*\.[0-9]*\.[0-9]*    { ECHO_YY; addLexError(line, "Malformed number"); }
+[0-9]*\.[0-9]*\.[0-9]*    {  addLexError(line, "Malformed number"); }
 
-[0-9]+\.[0-9]+            { ECHO_YY; yylval.str = strdup("float"); return NUMBER; }
-[0-9]+                    { ECHO_YY; yylval.str = strdup("int"); return NUMBER; }
+[0-9]+\.[0-9]+            {  yylval.str = strdup("float"); return NUMBER; }
+[0-9]+                    {  yylval.str = strdup("int"); return NUMBER; }
 
-\"([^\"\n]*)$             { ECHO_YY; addLexError(line, "Unterminated string"); }
-\"([^\"\n]*)\"            { ECHO_YY; yylval.str = strdup("string"); return STRING_LITERAL; }
+\"([^\"\n]*)$             {  addLexError(line, "Unterminated string"); }
+\"([^\"\n]*)\"            {  yylval.str = strdup("string"); return STRING_LITERAL; }
 
-\'([^\'\n]*)$             { ECHO_YY; addLexError(line, "Unterminated character"); }
-\'([^\'\n])\'             { ECHO_YY; yylval.str = strdup("char"); return CHAR_LITERAL; }
+\'([^\'\n]*)$             {  addLexError(line, "Unterminated character"); }
+\'([^\'\n])\'             {  yylval.str = strdup("char"); return CHAR_LITERAL; }
 
-[0-9][a-zA-Z_]+           { ECHO_YY; addLexError(line, "Invalid identifier"); }
+[0-9][a-zA-Z_]+           { addLexError(line, "Invalid identifier"); }
 
 [a-zA-Z_][a-zA-Z0-9_]*[^a-zA-Z0-9 \t\n\+\-\*/=;(){}\[\]<>,&!\"']+ {
-    ECHO_YY;
+    
     char msg[128];
     snprintf(msg, sizeof(msg), "Invalid identifier '%s'", yytext);
     addLexError(line, msg);
@@ -132,41 +130,39 @@ int keyword_token(const char *kw){
     char *correct = autocorrect(yytext);
     if(correct != NULL && strcmp(correct, yytext) != 0){
         printf("Line %d : Auto-correcting typo '%s' to keyword '%s'\n", line, yytext, correct);
-        if(temp_out) fprintf(temp_out, "%s", correct);
+
         autocorrect_count++;
         int tok = keyword_token(correct);
         if(tok != -1) return tok;
-    } else {
-        ECHO_YY;
-    }
+    } 
     
     yylval.str = strdup(yytext);
     return IDENTIFIER;
 }
 
-"=="|">="|"<="|"!="|">"|"<" { ECHO_YY; return RELOP; }
+"=="|">="|"<="|"!="|">"|"<" {  return RELOP; }
 
-"+" { ECHO_YY; return PLUS; }
-"-" { ECHO_YY; return MINUS; }
-"*" { ECHO_YY; return MUL; }
-"/" { ECHO_YY; return DIV; }
-"=" { ECHO_YY; return ASSIGN; }
+"+" {  return PLUS; }
+"-" {  return MINUS; }
+"*" {  return MUL; }
+"/" {  return DIV; }
+"=" {  return ASSIGN; }
 
-";" { ECHO_YY; return SEMI; }
-"(" { ECHO_YY; return LPAREN; }
-")" { ECHO_YY; return RPAREN; }
-"{" { ECHO_YY; return LBRACE; }
-"}" { ECHO_YY; return RBRACE; }
-"[" { ECHO_YY; return LBRACKET; }
-"]" { ECHO_YY; return RBRACKET; }
-"," { ECHO_YY; return COMMA; }
-"&" { ECHO_YY; return AMPERSAND; }
+";" {  return SEMI; }
+"(" {  return LPAREN; }
+")" {  return RPAREN; }
+"{" {  return LBRACE; }
+"}" {  return RBRACE; }
+"[" {  return LBRACKET; }
+"]" {  return RBRACKET; }
+"," {  return COMMA; }
+"&" {  return AMPERSAND; }
 
-[ \t\r]+ { ECHO_YY; }
-\n { ECHO_YY; line++; }
+[ \t\r]+ {  }
+\n { line++; }
 
 [^a-zA-Z0-9 \t\n\+\-\*/=;(){}\[\]<>,&!\"'] {
-    ECHO_YY;
+    
     addLexError(line, "Invalid character");
 }
 
