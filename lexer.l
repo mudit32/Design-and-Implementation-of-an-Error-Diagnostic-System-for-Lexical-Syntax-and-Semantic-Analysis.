@@ -9,7 +9,6 @@ int line = 1;
 
 int autocorrect_count = 0;
 
-
 char *keywords[] = {"int","float","char","string","if","else","while","for","printf","scanf"};
 int kw_count = 10;
 
