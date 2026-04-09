@@ -18,9 +18,13 @@ This project implements a compiler front-end error diagnostic system using Lex a
 
 ## 📁 Project Structure
 ├── lexer.l      # Lex file (Lexical Analyzer)
+
 ├── parser.y     # Yacc file (Syntax Analyzer)
+
 ├── test.c       # Input test program
+
 ├── compiler     # Executable
+
 └── README.md
 
 ---
