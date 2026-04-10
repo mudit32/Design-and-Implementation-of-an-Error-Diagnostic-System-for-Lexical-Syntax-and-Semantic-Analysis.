@@ -42,7 +42,7 @@ int levenshtein(const char *s1, const char *s2) {
     }
     return matrix[len1][len2];
 }
-
+   
 char* autocorrect(char *word){
     if (strlen(word) <= 1) return NULL;
     int min = 100, index = -1;
