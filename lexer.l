@@ -6,6 +6,7 @@
 
 
 extern void addLexError(int, const char*);
+
 int line = 1;
 
 int autocorrect_count = 0;
