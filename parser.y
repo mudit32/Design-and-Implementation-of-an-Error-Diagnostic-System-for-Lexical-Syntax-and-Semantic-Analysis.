@@ -10,7 +10,7 @@ extern int line;
 /* FLAGS */
 int syntaxErrorFlag = 0;
 
-/*  ERROR STORAGE  */
+/* ERROR STORAGE  */
 typedef struct {
     int line;
     char msg[100];
