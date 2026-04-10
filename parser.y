@@ -7,7 +7,7 @@ int yylex();
 void yyerror(const char *s);
 extern int line;
 
-/* FLAGS */
+/* FLAGS  */
 int syntaxErrorFlag = 0;
 
 /*  ERROR STORAGE  */
